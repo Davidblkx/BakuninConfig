@@ -1,0 +1,36 @@
+[package]
+name = "bakunin_config"
+version = "0.1.0"
+resolver = "2"
+edition = "2021"
+description = "Layered configuration for Rust applications."
+authors = ["David Pires <developer@davidpires.pt>"]
+readme = "README.MD"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Davidblkx/BakuninConfig"
+keywords = ["configuration", "config", "layered-config", "bakunin", "bakunin-config"]
+categories = ["configuration", "utilities"]
+
+[dependencies]
+thiserror = { version = "1.0" }
+serde = { version = "1", features = ["derive"] }
+paste = "1.0"
+log = "0.4"
+directories = "5.0"
+serde_json = { version = "1", optional = true }
+toml = { version = "0.8.8", optional = true }
+json5 = { version = "0.4.1", optional = true }
+serde_yaml = { version = "0.9.27", optional = true }
+
+[features]
+default = ["json", "toml", "json5", "yaml"]
+json = ["dep:serde_json"]
+toml = ["dep:toml"]
+json5 = ["dep:json5"]
+yaml = ["dep:serde_yaml"]
+
+[dev-dependencies]
+serde_json = { version = "1" }
+toml = { version = "0.8.8" }
+json5 = { version = "0.4.1" }
+serde_yaml = { version = "0.9.27" }
