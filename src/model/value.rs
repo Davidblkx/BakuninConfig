@@ -1,4 +1,5 @@
 use std::{collections::HashMap, fmt::Display};
+use super::ValueIter;
 
 use crate::errors::ConfigError;
 
@@ -111,6 +112,10 @@ impl Value {
 
     pub fn is_none(&self) -> bool {
         matches!(self, Value::None)
+    }
+
+    pub fn iter<'a>(&'a self) -> ValueIter<'a> {
+        ValueIter::new(self)
     }
 }
 
