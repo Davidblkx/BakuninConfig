@@ -1,0 +1,16 @@
+name: pull-request
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Run tests
+        run: cargo test

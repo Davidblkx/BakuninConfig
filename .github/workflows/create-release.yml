@@ -1,0 +1,37 @@
+name: create-release
+run-name: "Create Release"
+
+on: 
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release'
+        required: true
+        type: choice
+        default: 'patch'
+        options:
+          - 'major'
+          - 'minor'
+          - 'patch'
+
+# Create a github release for a cargo project
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Rust
+        uses: actions/setup-rust@v1
+        with:
+          toolchain: stable
+
+      - name: Install cargo-release
+        run: cargo install cargo-release
+
+      - name: Create Release
+        run: cargo release ${{ github.event.inputs.version }}
+        env:
+          CRATE_NAME: my_crate
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
