@@ -1,0 +1,31 @@
+name: "create-release"
+run-name: "create-release"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Rust
+        uses: hecrj/setup-rust-action@v2
+        with:
+          rust-version: 'stable'
+
+      - name: Read version
+        id: read-version
+        run: echo ::set-output name=version::$(cat Cargo.toml | grep version | head -n1 | cut -d '"' -f2)
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.read-version.outputs.version }}
+          name: Release ${{ steps.read-version.outputs.version }}
+          generate_release_notes: true
+          draft: true
+          prerelease: false
