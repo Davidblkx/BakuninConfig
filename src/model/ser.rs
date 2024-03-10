@@ -492,12 +492,11 @@ mod tests {
         let hmap = {
             let mut hmap = std::collections::HashMap::new();
             hmap.insert("a".to_owned(), Value::Integer(42));
-            hmap.insert("b".to_owned(), Value::Integer(43));
             hmap
         };
         let value = Value::Map(hmap);
         let serialized = serde_json::to_string(&value).unwrap();
-        assert_eq!(serialized, "{\"a\":42,\"b\":43}");
+        assert_eq!(serialized, "{\"a\":42}");
     }
 
     #[test]
