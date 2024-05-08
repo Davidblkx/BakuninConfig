@@ -1,6 +1,6 @@
 [package]
 name = "bakunin_config"
-version = "0.1.2"
+version = "0.1.3"
 resolver = "2"
 edition = "2021"
 description = "Layered configuration for Rust applications."
