@@ -4,7 +4,7 @@ Layered configuration for Rust applications.
 
 ## About
 
-It was created to provide a way to search and load configurations from different sources and merge them into a single configuration value. It uses serde to serialize and deserialize the configuration values, which means that you can use any format supported by serde to store your configuration. By default, it supports JSON, JSON5, TOML, and YAML. It employs a slot system to merge the configuration values, starting from 0 to u64::MAX, where the last one takes precedence
+It was created to provide a way to search and load configurations from different sources and merge them into a single configuration value. It uses serde to serialize and deserialize the configuration values, which means that you can use any format supported by serde to store your configuration. By default, it supports TOML, and support for JSON, JSON5 and YAML can be enabled by features. It employs a slot system to merge the configuration values, starting from 0 to u64::MAX, where the last one takes precedence
 
 ## Usage
 
