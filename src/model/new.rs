@@ -24,7 +24,7 @@ impl Value {
 macro_rules! value_map {
     ($($key:ident: $value:expr),* $(,)?) => {
         {
-            let mut map = Value::new_map();
+            let mut map = $crate::Value::new_map();
             $(
                 map.set(stringify!($key), $value.into()).unwrap();
             )*
@@ -37,7 +37,7 @@ macro_rules! value_map {
 macro_rules! value_vec {
     ($($value:expr),* $(,)?) => {
         {
-            let mut array = Value::new_array();
+            let mut array = $crate::Value::new_array();
             $(
                 array.push($value.into()).unwrap();
             )*

@@ -33,7 +33,6 @@ impl Value {
 #[cfg(test)]
 mod tests {
     use crate::value_map;
-    use super::Value;
 
     #[test]
     fn test_merge() {
