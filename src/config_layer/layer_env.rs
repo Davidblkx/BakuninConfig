@@ -1,21 +1,21 @@
 use std::collections::HashMap;
 
-use crate::Value;
-use super::{ConfigLayerError, Result};
+use super::ConfigLayerError;
+use crate::{Result, Value};
 
 #[derive(Debug, Clone)]
 pub struct EnvironmentConfigLayer {
-    prefix: &'static str
+    prefix: &'static str,
 }
 
 /// Configuration layer that reads values from environment variables with a specified prefix.
 impl EnvironmentConfigLayer {
     pub fn new(prefix: &'static str) -> Self {
         Self {
-            prefix: prefix.trim()
+            prefix: prefix.trim(),
         }
     }
-    
+
     pub fn get_prefix(&self) -> &'static str {
         self.prefix
     }
@@ -35,15 +35,21 @@ impl super::ConfigLayer for EnvironmentConfigLayer {
     }
 
     fn write_value(&self, _value: &Value) -> Result<()> {
-        Err(ConfigLayerError::WriteNotSupported)
+        Err(ConfigLayerError::WriteNotSupported.into())
     }
 
     fn read_value(&self) -> Result<Value> {
         if self.prefix.is_empty() {
-            return Err(ConfigLayerError::ErrorReadingValue("Environment prefix cannot be empty".to_string()));
+            return Err(ConfigLayerError::ErrorReadingValue(
+                "Environment prefix cannot be empty".to_string(),
+            )
+            .into());
         }
 
-        log::trace!("Loading environment variables with prefix {:?}", self.prefix);
+        log::trace!(
+            "Loading environment variables with prefix {:?}",
+            self.prefix
+        );
         let mut map = HashMap::new();
 
         for (key, value) in std::env::vars_os() {
@@ -54,24 +60,28 @@ impl super::ConfigLayer for EnvironmentConfigLayer {
                     continue;
                 }
             };
-    
+
             if !str_key.starts_with(self.prefix) {
                 continue;
             }
-    
+
             let key = str_key.trim_start_matches(self.prefix);
-    
+
             let value = match value.into_string() {
                 Ok(value) => value,
                 Err(value) => {
-                    log::debug!("Invalid environment variable [{:?}] value: {:?}", key, value);
+                    log::debug!(
+                        "Invalid environment variable [{:?}] value: {:?}",
+                        key,
+                        value
+                    );
                     continue;
                 }
             };
-    
+
             map.insert(key.to_string(), Value::String(value));
         }
-        
+
         Ok(Value::Map(map))
     }
 }

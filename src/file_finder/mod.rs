@@ -26,7 +26,6 @@ pub mod alg_find_first;
 pub mod alg_find_last;
 
 pub use error::FileFinderError;
-pub use error::Result;
 pub use file_extension::FileExtension;
 pub use find_result::FindResult;
 pub use finder::FileFinder;

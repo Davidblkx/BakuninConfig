@@ -19,5 +19,3 @@ pub enum FileFinderError {
     #[error("No extensions were defined")]
     NoExtensionsDefined,
 }
-
-pub type Result<T> = std::result::Result<T, FileFinderError>;

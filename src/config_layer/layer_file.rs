@@ -1,18 +1,27 @@
 use std::path::PathBuf;
 
-use crate::Value;
-use super::{Result, FileHandler};
+use super::FileHandler;
+use crate::{Result, Value};
 
 #[derive(Debug, Clone)]
 /// A configuration layer that reads/write from a file.
-pub struct FileConfigLayer<T> where T: FileHandler {
+pub struct FileConfigLayer<T>
+where
+    T: FileHandler,
+{
     path: PathBuf,
     t: std::marker::PhantomData<T>,
 }
 
-impl<T> FileConfigLayer<T> where T: FileHandler {
-    pub fn new(path: PathBuf, ) -> Self {
-        Self { path, t: std::marker::PhantomData }
+impl<T> FileConfigLayer<T>
+where
+    T: FileHandler,
+{
+    pub fn new(path: PathBuf) -> Self {
+        Self {
+            path,
+            t: std::marker::PhantomData,
+        }
     }
 
     pub fn get_path(&self) -> &PathBuf {
@@ -24,7 +33,10 @@ impl<T> FileConfigLayer<T> where T: FileHandler {
     }
 }
 
-impl<T> super::ConfigLayer for FileConfigLayer<T> where T: FileHandler {
+impl<T> super::ConfigLayer for FileConfigLayer<T>
+where
+    T: FileHandler,
+{
     fn get_name(&self) -> &'static str {
         "File"
     }

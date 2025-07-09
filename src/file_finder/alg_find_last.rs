@@ -1,6 +1,6 @@
 //! Contains the `find_last` algorithm for finding the last file in a directory that matches a given pattern.
 
-use super::{FileFinder, FileFinderError, FindResult, Result};
+use super::{FileFinder, FileFinderError, FindResult};
 
 impl FileFinder {
     /// Finds the last file that matches the specified file name and extensions in the defined folders.
@@ -11,7 +11,7 @@ impl FileFinder {
     ///
     /// # Arguments
     /// * `allow_missing` - If true, and no files are found, it will return the last combination.
-    pub fn find_last(&self, allow_missing: bool) -> Result<FindResult> {
+    pub fn find_last(&self, allow_missing: bool) -> crate::Result<FindResult> {
         self.validate()?;
 
         // Last existing file found
@@ -39,7 +39,7 @@ impl FileFinder {
             }
         }
 
-        Err(FileFinderError::NoFilesFound)
+        Err(FileFinderError::NoFilesFound.into())
     }
 }
 

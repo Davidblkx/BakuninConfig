@@ -1,6 +1,6 @@
 extern crate bakunin_config;
 
-use bakunin_config::{Value, value_map, value_vec};
+use bakunin_config::{value_map, value_vec};
 
 fn main() {
     let val = value_map! {

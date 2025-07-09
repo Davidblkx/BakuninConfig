@@ -1,12 +1,36 @@
-> WARNING: Since 0.3.0 ConfigBuilder struct has been deprecated in favor of BakuninConfig and create_config! macro.
-
 # BakuninConfig
 
 Layered configuration for Rust applications.
 
 ## About
 
-BakuninConfig is a Rust library designed to provide a flexible and layered configuration system for applications. It allows you to define configuration values, load them from various sources (like files, environment variables, or in-memory). The library supports TOML and JSON formats. Values are aggregated from multiple layers, allowing for a clear hierarchy and overriding behavior. This is particularly useful for applications that need to manage configurations across different environments (development, testing, production) or user preferences.
+BakuninConfig is a Rust library designed to provide a flexible and layered configuration system for applications. It allows you to define configuration values, load them from various sources (like files, environment variables, or in-memory). The library supports TOML and JSON formats. Values are aggregated from multiple named layers, allowing to write back to a specific layer. This is particularly useful to initialize configuration with default values and is very flexible by ignoring invalid values, so you can add new layers without breaking existing configurations.
+
+## Example
+
+In this example, we will create a configuration handler that looks for a global configuration file in the user's home dir or user config dir, a local configuration file in the current working directory, and environment variables prefixed with "MY_APP_". If the global configuration file does not exist, it creates it with default values.
+
+```rust
+use bakunin_config::{create_config, value_map};
+
+let config = create_config!(".my-config" {
+    default: {
+        key1: "value1",
+        key2: 42,
+        key3: value_map! {
+            sub_key1: "sub_value1",
+            sub_key2: true
+        }
+    },
+    env: "MY_APP_",
+    "global": [UserHome, UserConfig] init: true,
+    "local": [WorkingDirectory]
+});
+
+let config_value = config.build_value(true).unwrap();
+```
+
+It also supports to write values back to the file system, so you can modify the configuration values and save them back to the file. Please read the documentation below for more details on how to use the library.
 
 ## Overview
 
@@ -289,3 +313,51 @@ let config_value = config.build_value(true).unwrap();
 ```
 
 local and global are arbitarily named, and can be any name you want, they are just used to identify the layers. The `create_config!` macro will automatically create the layers and add them to the configuration handler ny prder. The values in [] match enum OSDirectory.
+
+### Deserialization
+
+Since this is built on top of serde, You can try to deserialize any Value to a struct.
+
+```rust
+use bakunin_config::{create_config, value_map, value_vec};
+
+#[derive(Debug, serde::Deserialize)]
+struct Person {
+    name: String,
+    age: i32,
+    children: Vec<Child>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct Child {
+    name: String,
+    age: i32,
+}
+
+let config = create_config!(".my-config" {
+    default: {
+        key1: "value1",
+        key2: 42,
+        user: value_map! {
+            name: "John Doe",
+            age: 30,
+            children: value_vec![
+                value_map! { name: "Child1", age: 5 },
+                value_map! { name: "Child2", age: 3 }
+            ]
+        }
+    },
+    env: "MY_APP_",
+});
+
+let config_value = config.build_value(true).unwrap();
+
+let p: Person = config_value.get("user").deserialize().unwrap();
+assert_eq!(p.name, "John Doe");
+assert_eq!(p.age, 30);
+assert_eq!(p.children.len(), 2);
+assert_eq!(p.children[0].name, "Child1");
+assert_eq!(p.children[0].age, 5);
+assert_eq!(p.children[1].name, "Child2");
+assert_eq!(p.children[1].age, 3);
+```

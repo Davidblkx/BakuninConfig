@@ -1,6 +1,6 @@
 //! Contains the `find_first` algorithm for finding the first file in a directory that matches a given pattern.
 
-use super::{FileFinder, FileFinderError, FindResult, Result};
+use super::{FileFinder, FileFinderError, FindResult};
 
 impl FileFinder {
     /// Finds the first file that matches the specified file name and extensions in the defined folders.
@@ -11,7 +11,7 @@ impl FileFinder {
     ///
     /// # Arguments
     /// * `allow_missing` - If true, and no files are found, it will return the first combination.
-    pub fn find_first(&self, allow_missing: bool) -> Result<FindResult> {
+    pub fn find_first(&self, allow_missing: bool) -> crate::Result<FindResult> {
         self.validate()?;
 
         let mut first_found: Option<FindResult> = None;
@@ -37,7 +37,7 @@ impl FileFinder {
             }
         }
 
-        Err(FileFinderError::NoFilesFound)
+        Err(FileFinderError::NoFilesFound.into())
     }
 }
 
