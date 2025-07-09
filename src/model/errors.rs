@@ -10,7 +10,7 @@ pub enum ModelError {
     SerializationError(String),
     #[error("Error deserializing to value: {0}")]
     DeserializationError(String),
-    #[error("Error converting from {from:?} to {to:?}: {why:?}")]
+    #[error("Error converting from {from} to {to}: {why}")]
     ConversionError {
         from: &'static str,
         to: &'static str,
