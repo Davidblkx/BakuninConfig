@@ -27,7 +27,8 @@ impl TryInto<bool> for Value {
 
 macro_rules! to_number {
     ($value:ident, $from:ident, $to:ident) => {
-        <$to>::try_from($value).map_err(|_| conversion_error!($from, $to))
+        <$to>::try_from($value)
+            .map_err(|_| conversion_error!($from, $to, "Number value is out of target bounds"))
     };
 }
 
