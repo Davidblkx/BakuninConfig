@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
-use crate::config_layer::{ConfigLayer, Result, handlers, FileConfigLayer, EnvironmentConfigLayer, MemoryConfigLayer};
+use crate::config_layer::{
+    handlers, ConfigLayer, EnvironmentConfigLayer, FileConfigLayer, MemoryConfigLayer,
+};
 use crate::file_finder::FileExtension;
-use crate::Value;
+use crate::{Result, Value};
 
 /// A configuration builder that allows adding multiple configuration layers
 /// and building a final configuration value by merging the values from all layers.
@@ -20,13 +22,16 @@ impl BakuninConfig {
     }
 
     /// Add a new configuration layer to the builder.
-    /// 
+    ///
     /// If a layer with the same name already exists, it will be ignored.
-    /// 
+    ///
     /// Layers are identified by their names, which are static string slices.
     pub fn push_layer(&mut self, name: &'static str, layer: Box<dyn ConfigLayer>) {
         if self.layers.contains_key(name) {
-            log::trace!("Layer '{}' already exists in config, skipping addition", name);
+            log::trace!(
+                "Layer '{}' already exists in config, skipping addition",
+                name
+            );
             return; // Skip adding if the layer already exists
         }
 
@@ -35,7 +40,7 @@ impl BakuninConfig {
     }
 
     /// Add a new configuration layer.
-    /// 
+    ///
     /// Like `push_layer`, but returns `self` for method chaining.
     pub fn with_layer(mut self, name: &'static str, layer: Box<dyn ConfigLayer>) -> Self {
         self.push_layer(name, layer);
@@ -43,14 +48,17 @@ impl BakuninConfig {
     }
 
     /// Adds a file to the configuration layers based on its file extension.
-    /// 
+    ///
     /// Because the file extension determines which handler to use, this function
     /// will return an error if the file extension is not supported.
     pub fn add_file_layer(&mut self, name: &'static str, path: std::path::PathBuf) -> Result<()> {
         #[cfg(feature = "toml")]
         {
             if FileExtension::Toml.match_path(&path) {
-                self.push_layer(name, Box::new(FileConfigLayer::<handlers::TomlFileHandler>::new(path)));
+                self.push_layer(
+                    name,
+                    Box::new(FileConfigLayer::<handlers::TomlFileHandler>::new(path)),
+                );
                 return Ok(());
             }
         }
@@ -58,17 +66,20 @@ impl BakuninConfig {
         #[cfg(feature = "json")]
         {
             if FileExtension::Json.match_path(&path) {
-                self.push_layer(name, Box::new(FileConfigLayer::<handlers::JsonFileHandler>::new(path)));
+                self.push_layer(
+                    name,
+                    Box::new(FileConfigLayer::<handlers::JsonFileHandler>::new(path)),
+                );
                 return Ok(());
             }
         }
 
         let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("");
-        return Err(crate::config_layer::ConfigLayerError::UnsupportedExtension(ext.into()));
+        return Err(crate::config_layer::ConfigLayerError::UnsupportedExtension(ext.into()).into());
     }
 
     /// Adds a file layer to the configuration builder.
-    /// 
+    ///
     /// This method is a convenience wrapper around `add_file_layer` that returns `Result<Self>`.
     pub fn with_file_layer(mut self, name: &'static str, path: std::path::PathBuf) -> Result<Self> {
         self.add_file_layer(name, path)?;
@@ -76,7 +87,7 @@ impl BakuninConfig {
     }
 
     /// Adds an environment variable layer to the configuration builder.
-    /// 
+    ///
     /// Parameters:
     /// - `name`: The name of the layer, used for identification.
     /// - `prefix`: The prefix for environment variables that this layer will read.
@@ -85,7 +96,7 @@ impl BakuninConfig {
     }
 
     /// Adds an environment variable layer to the configuration builder.
-    /// 
+    ///
     /// This method is a convenience wrapper around `add_environment_layer` that returns `Self`.
     pub fn with_environment_layer(mut self, name: &'static str, prefix: &'static str) -> Self {
         self.add_environment_layer(name, prefix);
@@ -93,14 +104,14 @@ impl BakuninConfig {
     }
 
     /// Adds a memory layer to the configuration builder.
-    /// 
+    ///
     /// This layer is useful for testing or when you want to provide a default configuration
     pub fn add_memory_layer(&mut self, name: &'static str, value: Value) {
         self.push_layer(name, Box::new(MemoryConfigLayer::new(value)));
     }
 
     /// Adds a memory layer to the configuration builder.
-    /// 
+    ///
     /// This method is a convenience wrapper around `add_memory_layer` that returns `Self`.
     pub fn with_memory_layer(mut self, name: &'static str, value: Value) -> Self {
         self.add_memory_layer(name, value);
@@ -144,7 +155,6 @@ impl std::fmt::Debug for BakuninConfig {
         for (name, layer) in &self.layers {
             layers.push((name, layer.get_name()));
         }
-
 
         f.debug_struct("BakuninConfig")
             .field("layers", &layers)

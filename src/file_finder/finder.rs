@@ -38,12 +38,12 @@ impl FileFinder {
         self
     }
 
-    pub fn validate(&self) -> super::Result<()> {
+    pub fn validate(&self) -> crate::Result<()> {
         if self.folders.is_empty() {
-            return Err(super::FileFinderError::NoFoldersDefined);
+            return Err(super::FileFinderError::NoFoldersDefined.into());
         }
         if self.extensions.is_empty() {
-            return Err(super::FileFinderError::NoExtensionsDefined);
+            return Err(super::FileFinderError::NoExtensionsDefined.into());
         }
         Ok(())
     }

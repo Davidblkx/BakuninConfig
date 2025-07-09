@@ -1,7 +1,7 @@
-use std::{collections::HashMap, fmt::Display};
 use super::ValueIter;
+use std::{collections::HashMap, fmt::Display};
 
-use crate::errors::ConfigError;
+use super::ModelError;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
@@ -63,13 +63,13 @@ impl Value {
         }
     }
 
-    pub fn set(&mut self, key: &str, value: Value) -> Result<&mut Self, ConfigError> {
+    pub fn set(&mut self, key: &str, value: Value) -> Result<&mut Self, ModelError> {
         match self {
             Value::Map(map) => {
                 map.insert(key.to_string(), value);
                 Ok(self)
             }
-            _ => Err(ConfigError::NotMapValue),
+            _ => Err(ModelError::OperationOnlyForMapValue),
         }
     }
 
@@ -83,13 +83,13 @@ impl Value {
         }
     }
 
-    pub fn push(&mut self, value: Value) -> Result<&mut Self, ConfigError> {
+    pub fn push(&mut self, value: Value) -> Result<&mut Self, ModelError> {
         match self {
             Value::Array(array) => {
                 array.push(value);
                 Ok(self)
             }
-            _ => Err(ConfigError::NotArrayValue),
+            _ => Err(ModelError::OperationOnlyForArrayValue),
         }
     }
 
@@ -152,9 +152,7 @@ mod tests {
         let value = Value::Array(vec![Value::Integer(1), Value::Integer(2)]);
         assert_eq!(format!("{}", value), "[1, 2]");
 
-        let value = Value::Map(
-            HashMap::from([("a".to_string(), Value::Integer(1))])
-        );
+        let value = Value::Map(HashMap::from([("a".to_string(), Value::Integer(1))]));
         assert_eq!(format!("{}", value), "{a: 1}");
     }
 }

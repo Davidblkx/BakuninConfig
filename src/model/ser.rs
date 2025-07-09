@@ -1,13 +1,12 @@
-use serde::ser::{Serializer, SerializeSeq, SerializeMap};
+use serde::ser::{SerializeMap, SerializeSeq, Serializer};
 
-use super::Value;
-
-use crate::errors::ConfigError;
+use super::{ModelError, Value};
 
 impl serde::ser::Serialize for Value {
     fn serialize<S>(&self, s: S) -> Result<S::Ok, S::Error>
     where
-        S: Serializer {
+        S: Serializer,
+    {
         match self {
             Value::None => s.serialize_none(),
             Value::Boolean(value) => s.serialize_bool(*value),
@@ -36,10 +35,11 @@ impl serde::ser::Serialize for Value {
 }
 
 impl Value {
-    pub fn serialize<T>(value: T) -> Result<Value, ConfigError>
+    pub fn serialize<T>(value: T) -> Result<Value, ModelError>
     where
-        T: serde::Serialize {
-            value.serialize(ValueSerializer)
+        T: serde::Serialize,
+    {
+        value.serialize(ValueSerializer)
     }
 }
 
@@ -48,7 +48,7 @@ pub struct ValueSerializer;
 impl serde::Serializer for ValueSerializer {
     type Ok = Value;
 
-    type Error = ConfigError;
+    type Error = ModelError;
 
     type SerializeSeq = ValueSerSeq;
 
@@ -130,8 +130,9 @@ impl serde::Serializer for ValueSerializer {
 
     fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::Serialize {
-            value.serialize(self)
+        T: serde::Serialize,
+    {
+        value.serialize(self)
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
@@ -157,7 +158,8 @@ impl serde::Serializer for ValueSerializer {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::Serialize {
+        T: serde::Serialize,
+    {
         value.serialize(self)
     }
 
@@ -169,7 +171,8 @@ impl serde::Serializer for ValueSerializer {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::Serialize {
+        T: serde::Serialize,
+    {
         let mut res = Value::new_map();
         res.set(variant, value.serialize(ValueSerializer)?)?;
         Ok(res)
@@ -240,11 +243,12 @@ macro_rules! impl_ser_seq {
     ($fn_name:ident) => {
         type Ok = Value;
 
-        type Error = ConfigError;
+        type Error = ModelError;
 
         fn $fn_name<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
         where
-            T: serde::Serialize {
+            T: serde::Serialize,
+        {
             let elem = value.serialize(ValueSerializer)?;
             self.seq.push(elem)?;
             Ok(())
@@ -261,7 +265,7 @@ impl serde::ser::SerializeSeq for ValueSerSeq {
 }
 
 impl serde::ser::SerializeTuple for ValueSerSeq {
-    impl_ser_seq!(serialize_element); 
+    impl_ser_seq!(serialize_element);
 }
 
 impl serde::ser::SerializeTupleStruct for ValueSerSeq {
@@ -285,11 +289,12 @@ impl ValueSerTupleVariant {
 impl serde::ser::SerializeTupleVariant for ValueSerTupleVariant {
     type Ok = Value;
 
-    type Error = ConfigError;
+    type Error = ModelError;
 
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::Serialize {
+        T: serde::Serialize,
+    {
         let elem = value.serialize(ValueSerializer)?;
         self.seq.push(elem)?;
         Ok(())
@@ -319,11 +324,12 @@ impl ValueSerMap {
 impl serde::ser::SerializeMap for ValueSerMap {
     type Ok = Value;
 
-    type Error = ConfigError;
+    type Error = ModelError;
 
     fn serialize_key<T: ?Sized>(&mut self, key: &T) -> Result<(), Self::Error>
     where
-        T: serde::Serialize {
+        T: serde::Serialize,
+    {
         let key = key.serialize(ValueSerializer)?;
         self.key = Some(key.try_into_string()?);
         Ok(())
@@ -331,11 +337,15 @@ impl serde::ser::SerializeMap for ValueSerMap {
 
     fn serialize_value<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::Serialize {
-            let key = self.key.take().expect("serialize_value called before serialize_key");
-            let value = value.serialize(ValueSerializer)?;
-            self.map.set(&key, value)?;
-            Ok(())
+        T: serde::Serialize,
+    {
+        let key = self
+            .key
+            .take()
+            .expect("serialize_value called before serialize_key");
+        let value = value.serialize(ValueSerializer)?;
+        self.map.set(&key, value)?;
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
@@ -360,11 +370,16 @@ impl ValueSerStructVariant {
 impl serde::ser::SerializeStructVariant for ValueSerStructVariant {
     type Ok = Value;
 
-    type Error = ConfigError;
+    type Error = ModelError;
 
-    fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
+    fn serialize_field<T: ?Sized>(
+        &mut self,
+        key: &'static str,
+        value: &T,
+    ) -> Result<(), Self::Error>
     where
-        T: serde::Serialize {
+        T: serde::Serialize,
+    {
         let value = value.serialize(ValueSerializer)?;
         self.map.set(&key, value)?;
         Ok(())
@@ -380,11 +395,16 @@ impl serde::ser::SerializeStructVariant for ValueSerStructVariant {
 impl serde::ser::SerializeStruct for ValueSerMap {
     type Ok = Value;
 
-    type Error = ConfigError;
+    type Error = ModelError;
 
-    fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
+    fn serialize_field<T: ?Sized>(
+        &mut self,
+        key: &'static str,
+        value: &T,
+    ) -> Result<(), Self::Error>
     where
-        T: serde::Serialize {
+        T: serde::Serialize,
+    {
         let value = value.serialize(ValueSerializer)?;
         self.map.set(&key, value)?;
         Ok(())
@@ -419,7 +439,7 @@ mod tests {
                 age,
                 childs: vec![],
                 fam: HashMap::new(),
-                data: Some(10)
+                data: Some(10),
             }
         }
     }
@@ -502,7 +522,7 @@ mod tests {
     #[test]
     fn test_model_value_serializer() {
         let mut user = TestStruct::new("John", 42);
-        
+
         let child1 = TestStruct::new("Jane", 12);
         user.childs.push(child1);
         let child2 = TestStruct::new("Jack", 10);
@@ -518,13 +538,61 @@ mod tests {
 
         assert_eq!(val.get("name").try_into_string().unwrap(), "John");
         assert_eq!(val.get("age").try_into_i64().unwrap(), 42);
-        assert_eq!(val.get("childs").at(0).get("name").try_into_string().unwrap(), "Jane");
-        assert_eq!(val.get("childs").at(0).get("age").try_into_i64().unwrap(), 12);
-        assert_eq!(val.get("childs").at(1).get("name").try_into_string().unwrap(), "Jack");
-        assert_eq!(val.get("childs").at(1).get("age").try_into_i64().unwrap(), 10);
-        assert_eq!(val.get("fam").get("wife").get("name").try_into_string().unwrap(), "Jane");
-        assert_eq!(val.get("fam").get("wife").get("age").try_into_i64().unwrap(), 45);
-        assert_eq!(val.get("fam").get("cousin").get("name").try_into_string().unwrap(), "Jack");
-        assert_eq!(val.get("fam").get("cousin").get("age").try_into_i64().unwrap(), 51);
+        assert_eq!(
+            val.get("childs")
+                .at(0)
+                .get("name")
+                .try_into_string()
+                .unwrap(),
+            "Jane"
+        );
+        assert_eq!(
+            val.get("childs").at(0).get("age").try_into_i64().unwrap(),
+            12
+        );
+        assert_eq!(
+            val.get("childs")
+                .at(1)
+                .get("name")
+                .try_into_string()
+                .unwrap(),
+            "Jack"
+        );
+        assert_eq!(
+            val.get("childs").at(1).get("age").try_into_i64().unwrap(),
+            10
+        );
+        assert_eq!(
+            val.get("fam")
+                .get("wife")
+                .get("name")
+                .try_into_string()
+                .unwrap(),
+            "Jane"
+        );
+        assert_eq!(
+            val.get("fam")
+                .get("wife")
+                .get("age")
+                .try_into_i64()
+                .unwrap(),
+            45
+        );
+        assert_eq!(
+            val.get("fam")
+                .get("cousin")
+                .get("name")
+                .try_into_string()
+                .unwrap(),
+            "Jack"
+        );
+        assert_eq!(
+            val.get("fam")
+                .get("cousin")
+                .get("age")
+                .try_into_i64()
+                .unwrap(),
+            51
+        );
     }
 }

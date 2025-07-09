@@ -1,5 +1,4 @@
-use crate::Value;
-use super::Result;
+use crate::{Result, Value};
 
 pub trait ConfigLayer {
     fn get_name(&self) -> &'static str;

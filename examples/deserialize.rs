@@ -1,13 +1,13 @@
 extern crate bakunin_config;
 
-use bakunin_config::{value_map, value_vec, Value};
+use bakunin_config::{value_map, value_vec};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 struct Person {
     name: String,
     age: i32,
-    children: Vec<Person>
+    children: Vec<Person>,
 }
 
 fn main() {

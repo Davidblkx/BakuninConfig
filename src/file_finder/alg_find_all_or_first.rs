@@ -1,6 +1,6 @@
 //! Contains the `find_all_or_first` algorithm for finding files in a directory that matches a given pattern.
 
-use super::{FileFinder, FileFinderError, FindResult, Result};
+use super::{FileFinder, FileFinderError, FindResult};
 
 impl FileFinder {
     /// Finds the files that matches the specified file name and extensions in the defined folders.
@@ -9,7 +9,7 @@ impl FileFinder {
     /// Folders are searched in the order they were defined.
     ///
     /// Extensions are checked in the order they were defined.
-    pub fn find_all_or_first(&self) -> Result<Vec<FindResult>> {
+    pub fn find_all_or_first(&self) -> crate::Result<Vec<FindResult>> {
         self.validate()?;
 
         let mut files = Vec::new();
@@ -35,7 +35,7 @@ impl FileFinder {
                 // If no files were found, return the first file found with the first extension
                 files.push(first.with_index(0));
             } else {
-                return Err(FileFinderError::NoFilesFound);
+                return Err(FileFinderError::NoFilesFound.into());
             }
         }
 

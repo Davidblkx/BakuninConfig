@@ -1,6 +1,6 @@
 [package]
 name = "bakunin_config"
-version = "0.3.0"
+version = "1.0.0-alpha.1"
 resolver = "2"
 edition = "2021"
 description = "Layered configuration for Rust applications."
@@ -19,18 +19,12 @@ log = "0.4"
 directories = "5.0"
 serde_json = { version = "1", optional = true }
 toml = { version = "0.8.8", optional = true }
-json5 = { version = "0.4.1", optional = true }
-serde_yaml = { version = "0.9.27", optional = true }
 
 [features]
-default = ["toml", "json"]
-json = ["dep:serde_json", "dep:json5"]
+default = ["toml"]
+json = ["dep:serde_json"]
 toml = ["dep:toml"]
-json5 = ["dep:json5"]
-yaml = ["dep:serde_yaml"]
 
 [dev-dependencies]
 serde_json = { version = "1" }
 toml = { version = "0.8.8" }
-json5 = { version = "0.4.1" }
-serde_yaml = { version = "0.9.27" }

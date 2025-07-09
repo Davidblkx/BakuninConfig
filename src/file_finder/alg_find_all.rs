@@ -1,6 +1,6 @@
 //! Contains the `find_all` algorithm for finding files in a directory that matches a given pattern.
 
-use super::{FileFinder, FileFinderError, FindResult, Result};
+use super::{FileFinder, FileFinderError, FindResult};
 
 impl FileFinder {
     /// Finds the files that matches the specified file name and extensions in the defined folders.
@@ -11,7 +11,7 @@ impl FileFinder {
     ///
     /// # Arguments
     /// * `allow_missing` - If true, return all combinations of the file name with the extensions, even if the files do not exist.
-    pub fn find_all(&self, allow_missing: bool) -> Result<Vec<FindResult>> {
+    pub fn find_all(&self, allow_missing: bool) -> crate::Result<Vec<FindResult>> {
         self.validate()?;
 
         let mut files = Vec::new();
@@ -29,7 +29,7 @@ impl FileFinder {
         }
 
         if files.is_empty() {
-            return Err(FileFinderError::NoFilesFound);
+            return Err(FileFinderError::NoFilesFound.into());
         }
 
         Ok(files)

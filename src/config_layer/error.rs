@@ -23,5 +23,3 @@ pub enum ConfigLayerError {
     #[error("Unsupported extension: {0}")]
     UnsupportedExtension(String),
 }
-
-pub type Result<T> = std::result::Result<T, ConfigLayerError>;

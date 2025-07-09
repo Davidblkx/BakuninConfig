@@ -1,5 +1,5 @@
-use crate::Value;
-use super::{ConfigLayerError, Result};
+use super::ConfigLayerError;
+use crate::{Result, Value};
 
 #[derive(Debug, Clone)]
 pub struct MemoryConfigLayer {
@@ -27,7 +27,7 @@ impl super::ConfigLayer for MemoryConfigLayer {
     }
 
     fn write_value(&self, _value: &Value) -> Result<()> {
-        Err(ConfigLayerError::WriteNotSupported)
+        Err(ConfigLayerError::WriteNotSupported.into())
     }
 
     fn read_value(&self) -> Result<Value> {
