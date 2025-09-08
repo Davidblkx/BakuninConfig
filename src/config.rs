@@ -10,7 +10,7 @@ use crate::{Result, Value};
 /// and building a final configuration value by merging the values from all layers.
 pub struct BakuninConfig {
     layers_names: Vec<&'static str>,
-    layers: HashMap<&'static str, Box<dyn ConfigLayer>>,
+    layers: HashMap<&'static str, Box<dyn ConfigLayer + Send + Sync>>,
 }
 
 impl BakuninConfig {
@@ -26,7 +26,7 @@ impl BakuninConfig {
     /// If a layer with the same name already exists, it will be ignored.
     ///
     /// Layers are identified by their names, which are static string slices.
-    pub fn push_layer(&mut self, name: &'static str, layer: Box<dyn ConfigLayer>) {
+    pub fn push_layer(&mut self, name: &'static str, layer: Box<dyn ConfigLayer + Send + Sync>) {
         if self.layers.contains_key(name) {
             log::trace!(
                 "Layer '{}' already exists in config, skipping addition",
@@ -42,7 +42,7 @@ impl BakuninConfig {
     /// Add a new configuration layer.
     ///
     /// Like `push_layer`, but returns `self` for method chaining.
-    pub fn with_layer(mut self, name: &'static str, layer: Box<dyn ConfigLayer>) -> Self {
+    pub fn with_layer(mut self, name: &'static str, layer: Box<dyn ConfigLayer + Send + Sync>) -> Self {
         self.push_layer(name, layer);
         self
     }
@@ -118,7 +118,7 @@ impl BakuninConfig {
         self
     }
 
-    pub fn get_layer(&self, name: &'static str) -> Option<&Box<dyn ConfigLayer>> {
+    pub fn get_layer(&self, name: &'static str) -> Option<&Box<dyn ConfigLayer + Send + Sync>> {
         self.layers.get(name)
     }
 
