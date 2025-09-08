@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use super::FileHandler;
 use crate::{Result, Value};
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 /// A configuration layer that reads/write from a file.
 pub struct FileConfigLayer<T>
 where
@@ -11,6 +11,18 @@ where
 {
     path: PathBuf,
     t: std::marker::PhantomData<T>,
+}
+
+impl<T> Clone for FileConfigLayer<T>
+where
+    T: FileHandler,
+{
+    fn clone(&self) -> Self {
+        Self {
+            path: self.path.clone(),
+            t: std::marker::PhantomData,
+        }
+    }
 }
 
 impl<T> FileConfigLayer<T>
@@ -35,7 +47,7 @@ where
 
 impl<T> super::ConfigLayer for FileConfigLayer<T>
 where
-    T: FileHandler,
+    T: FileHandler + Send + Sync + 'static,
 {
     fn get_name(&self) -> &'static str {
         "File"
@@ -51,6 +63,10 @@ where
 
     fn write_value(&self, value: &Value) -> Result<()> {
         T::write(&self.path, value)
+    }
+
+    fn clone_layer(&self) -> Box<dyn super::ConfigLayer + Send + Sync> {
+        Box::new(self.clone())
     }
 
     fn read_value(&self) -> Result<Value> {

@@ -10,7 +10,20 @@ use crate::{Result, Value};
 /// and building a final configuration value by merging the values from all layers.
 pub struct BakuninConfig {
     layers_names: Vec<&'static str>,
-    layers: HashMap<&'static str, Box<dyn ConfigLayer>>,
+    layers: HashMap<&'static str, Box<dyn ConfigLayer + Send + Sync>>,
+}
+
+impl Clone for BakuninConfig {
+    fn clone(&self) -> Self {
+        let mut layers = HashMap::new();
+        for (&name, layer) in &self.layers {
+            layers.insert(name, layer.clone_layer());
+        }
+        Self {
+            layers_names: self.layers_names.clone(),
+            layers,
+        }
+    }
 }
 
 impl BakuninConfig {
@@ -26,7 +39,7 @@ impl BakuninConfig {
     /// If a layer with the same name already exists, it will be ignored.
     ///
     /// Layers are identified by their names, which are static string slices.
-    pub fn push_layer(&mut self, name: &'static str, layer: Box<dyn ConfigLayer>) {
+    pub fn push_layer(&mut self, name: &'static str, layer: Box<dyn ConfigLayer + Send + Sync>) {
         if self.layers.contains_key(name) {
             log::trace!(
                 "Layer '{}' already exists in config, skipping addition",
@@ -42,7 +55,7 @@ impl BakuninConfig {
     /// Add a new configuration layer.
     ///
     /// Like `push_layer`, but returns `self` for method chaining.
-    pub fn with_layer(mut self, name: &'static str, layer: Box<dyn ConfigLayer>) -> Self {
+    pub fn with_layer(mut self, name: &'static str, layer: Box<dyn ConfigLayer + Send + Sync>) -> Self {
         self.push_layer(name, layer);
         self
     }
@@ -118,7 +131,7 @@ impl BakuninConfig {
         self
     }
 
-    pub fn get_layer(&self, name: &'static str) -> Option<&Box<dyn ConfigLayer>> {
+    pub fn get_layer(&self, name: &'static str) -> Option<&Box<dyn ConfigLayer + Send + Sync>> {
         self.layers.get(name)
     }
 
@@ -159,5 +172,26 @@ impl std::fmt::Debug for BakuninConfig {
         f.debug_struct("BakuninConfig")
             .field("layers", &layers)
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_bakunin_config_clone() {
+        let mut config = BakuninConfig::new();
+        let mut map = std::collections::HashMap::new();
+        map.insert("key".to_string(), Value::Integer(42));
+        config.add_memory_layer("mem", Value::Map(map));
+        
+        let cloned = config.clone();
+        
+        let val1 = config.build_value(false).unwrap();
+        let val2 = cloned.build_value(false).unwrap();
+        
+        assert_eq!(val1, val2);
+        assert_eq!(val1.get("key").try_into_i64().unwrap(), 42);
     }
 }

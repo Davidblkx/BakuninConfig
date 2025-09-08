@@ -10,4 +10,6 @@ pub trait ConfigLayer {
     fn can_write(&self) -> bool;
 
     fn write_value(&self, value: &Value) -> Result<()>;
+
+    fn clone_layer(&self) -> Box<dyn ConfigLayer + Send + Sync>;
 }
