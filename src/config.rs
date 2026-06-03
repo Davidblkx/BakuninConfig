@@ -13,6 +13,19 @@ pub struct BakuninConfig {
     layers: HashMap<&'static str, Box<dyn ConfigLayer + Send + Sync>>,
 }
 
+impl Clone for BakuninConfig {
+    fn clone(&self) -> Self {
+        let mut layers = HashMap::new();
+        for (&name, layer) in &self.layers {
+            layers.insert(name, layer.clone_layer());
+        }
+        Self {
+            layers_names: self.layers_names.clone(),
+            layers,
+        }
+    }
+}
+
 impl BakuninConfig {
     pub fn new() -> Self {
         BakuninConfig {
@@ -159,5 +172,26 @@ impl std::fmt::Debug for BakuninConfig {
         f.debug_struct("BakuninConfig")
             .field("layers", &layers)
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_bakunin_config_clone() {
+        let mut config = BakuninConfig::new();
+        let mut map = std::collections::HashMap::new();
+        map.insert("key".to_string(), Value::Integer(42));
+        config.add_memory_layer("mem", Value::Map(map));
+        
+        let cloned = config.clone();
+        
+        let val1 = config.build_value(false).unwrap();
+        let val2 = cloned.build_value(false).unwrap();
+        
+        assert_eq!(val1, val2);
+        assert_eq!(val1.get("key").try_into_i64().unwrap(), 42);
     }
 }

@@ -38,6 +38,10 @@ impl super::ConfigLayer for EnvironmentConfigLayer {
         Err(ConfigLayerError::WriteNotSupported.into())
     }
 
+    fn clone_layer(&self) -> Box<dyn super::ConfigLayer + Send + Sync> {
+        Box::new(self.clone())
+    }
+
     fn read_value(&self) -> Result<Value> {
         if self.prefix.is_empty() {
             return Err(ConfigLayerError::ErrorReadingValue(

@@ -30,6 +30,10 @@ impl super::ConfigLayer for MemoryConfigLayer {
         Err(ConfigLayerError::WriteNotSupported.into())
     }
 
+    fn clone_layer(&self) -> Box<dyn super::ConfigLayer + Send + Sync> {
+        Box::new(self.clone())
+    }
+
     fn read_value(&self) -> Result<Value> {
         Ok(self.value.clone())
     }
